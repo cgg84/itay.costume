@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mock Hacker UI (mobile)</title>
+  <style>
+    :root {
+      --bg: #030405;
+      --green: #39ff14;
+      --dim-green: rgba(57, 255, 20, 0.12);
+      --mono: "Consolas", "Courier New", monospace;
+      --hacker-fs: clamp(20px, 9vw, 48px);
+      /* mobile-first sizes */
+    }
+
+    /* mobile-first base */
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 10% 10%, rgba(57, 255, 20, 0.03), transparent 10%),
+        linear-gradient(180deg, #001007 0%, #030405 60%);
+      color: var(--green);
+      font-family: var(--mono);
+      -webkit-font-smoothing: antialiased;
+      font-size: 16px;
+    }
+
+    .container {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.35));
+      border: 1px solid rgba(57, 255, 20, 0.08);
+      padding: 16px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* header */
+    .titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dots {
+      display: flex;
+      gap: 6px
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--dim-green)
+    }
+
+    .title {
+      font-size: 12px;
+      color: rgba(57, 255, 20, 0.9)
+    }
+
+    /* terminal */
+    .term {
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.05));
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid rgba(57, 255, 20, 0.04);
+      min-height: 160px;
+      position: relative;
+      overflow: hidden;
+      display: block;
+    }
+
+    .scanlines::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(transparent 50%, rgba(0, 0, 0, 0.12) 50%);
+      background-size: 100% 3px;
+      opacity: 0.10;
+      mix-blend-mode: overlay;
+    }
+
+    /* hacker text container: caret is inline with text so it flows/wraps correctly */
+    .hacker-text {
+      direction: rtl;
+      /* keep RTL rendering */
+      font-size: var(--hacker-fs);
+      line-height: 1.05;
+      color: var(--green);
+      text-shadow: 0 0 8px rgba(57, 255, 20, 0.12);
+      white-space: normal;
+      /* allow wrapping */
+      word-break: break-word;
+      overflow-wrap: break-word;
+      display: inline-block;
+      width: 100%;
+      text-align: right;
+      box-sizing: border-box;
+    }
+
+    /* caret scales with font-size (em) and is inline so it stays at end of last line */
+    .caret {
+      display: inline-block;
+      width: 0.18em;
+      min-width: 6px;
+      max-width: 10px;
+      height: 0.95em;
+      background: var(--green);
+      margin-left: 0.35em;
+      /* spacing from text (left because RTL) */
+      vertical-align: bottom;
+      border-radius: 2px;
+      animation: blink 1s steps(2, start) infinite, flicker .35s infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0
+      }
+    }
+
+    @keyframes flicker {
+      0% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.6
+      }
+
+      100% {
+        opacity: 1
+      }
+    }
+
+    .noise {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.06;
+      background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.01) 0 1px, transparent 1px 3px);
+    }
+
+    .meta {
+      font-size: 12px;
+      color: rgba(57, 255, 20, 0.6);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px
+    }
+
+    .meta .small {
+      opacity: 0.6
+    }
+
+    /* mobile-only: hide main UI and show overlay on larger screens */
+    .desktop-overlay {
+      display: none;
+    }
+
+    @media (min-width:601px) {
+
+      /* hide the panel on wider screens and inform user */
+      .container,
+      .panel {
+        display: none
+      }
+
+      .desktop-overlay {
+        display: flex;
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, #020305, #061014);
+        color: var(--green);
+        font-family: var(--mono);
+        text-align: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      .desktop-overlay .box {
+        max-width: 720px;
+        border: 1px solid rgba(57, 255, 20, 0.06);
+        padding: 20px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.25)
+      }
+
+      .desktop-overlay .hint {
+        opacity: 0.85;
+        font-size: 18px;
+        margin-bottom: 10px
+      }
+
+      .desktop-overlay .sub {
+        opacity: 0.6;
+        font-size: 13px
+      }
+    }
+
+    /* very small tweaks */
+    @media (max-width:320px) {
+      :root {
+        --hacker-fs: clamp(18px, 10.5vw, 36px)
+      }
+
+      .panel {
+        padding: 12px;
+        border-radius: 8px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- desktop-only overlay -->
+  <!-- <div class="desktop-overlay" role="dialog" aria-hidden="false">
+    <div class="box">
+      <div class="hint">תצוגה זו מיועדת לנייד בלבד</div>
+      <div class="sub">פתח בעמוד זה מהמכשיר הנייד שלך כדי לראות את הממשק.</div>
+    </div>
+  </div> -->
+
+  <!-- mobile panel -->
+  <div class="container" aria-hidden="false">
+    <div class="panel" role="main" aria-label="Mock hacker UI">
+      <div class="titlebar">
+        <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="title">SYSTEM — DEBUG CONSOLE</div>
+      </div>
+
+      <div class="term scanlines">
+        <!-- make text+caret inline so caret follows wrapped lines -->
+        <div style="width:100%;">
+          <div class="hacker-text" id="msg" dir="rtl" aria-live="polite">
+            <span id="textInner" aria-hidden="false"></span><span class="caret" id="caret" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div class="noise" aria-hidden="true"></div>
+      </div>
+
+      <div class="meta" aria-hidden="false">
+        <div class="small">host: 192.0.2.137 · session: 0x9af3</div>
+        <div class="small">status: connected</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // mobile-first typing: append characters into the inline span so the caret (inline) stays at the visual end,
+    // even when the message wraps into multiple lines.
+    (function () {
+      const text = "itay.grin16 פרץ לך לטלפון";
+      const inner = document.getElementById('textInner');
+      const caret = document.getElementById('caret');
+      inner.textContent = "";
+      let i = 0;
+      const chars = Array.from(text);
+
+      function typeNext() {
+        if (i < chars.length) {
+          // append so caret (placed after the text) stays aligned with visual end
+          inner.textContent += chars[i];
+          i++;
+          const t = 60 + Math.random() * 120;
+          setTimeout(typeNext, t);
+        } else {
+          // final subtle blink then pause
+          caret.style.animation = "blink 1s steps(2,start) 4";
+          caret.style.opacity = "0.95";
+        }
+      }
+
+      // small delay to start typing
+      setTimeout(typeNext, 450);
+
+      // subtle dot flicker
+      setInterval(() => {
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach(d => d.style.opacity = (Math.random() > .4) ? "1" : "0.35");
+      }, 700);
+
+      // ensure caret stays at end on orientation/resize (reflow)
+      window.addEventListener('orientationchange', () => { /* no-op, reflow happens automatically */ });
+    })();
+  </script>
+</body>
+
+</html>
